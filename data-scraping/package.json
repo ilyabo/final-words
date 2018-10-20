@@ -1,0 +1,20 @@
+{
+  "name": "last-statements",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "scrape": "node ./scrape.js",
+    "to-csv": "node ./to-csv.js",
+    "to-words": "node ./to-words.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "d3-dsv": "^1.0.10",
+    "lodash": "^4.17.11",
+    "node-fetch": "^2.2.0",
+    "node-html-parser": "^1.1.10"
+  }
+}
