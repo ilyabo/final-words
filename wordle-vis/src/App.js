@@ -1,6 +1,20 @@
 import React, { Component } from 'react'
 import { csvParse } from 'd3-dsv'
 import WordCloud from './WordCloud'
+import { insertGlobal, insertRule, css } from 'glamor'
+import take from 'lodash/take'
+import isEmpty from 'lodash/isEmpty'
+
+
+insertRule(`
+  @import url('https://fonts.googleapis.com/css?family=Lato');
+`)
+
+insertGlobal('body', {
+  backgroundColor: '#cc381e',
+  margin: 0,
+  padding: 0,
+})
 
 class App extends Component {
 
@@ -9,11 +23,11 @@ class App extends Component {
   }
 
   componentDidMount() {
-    fetch('counts/20181019-132043-trigram-counts.csv')
+    fetch('counts/20181019-132045-word-counts.csv')
       .then(response => response.text())
       .then(text => this.setState({
         counts: csvParse(text).map(d => ({
-          text: d['trigram phrase'],
+          text: d.word,
           count: d.frequency,
         }))
       }))
@@ -21,11 +35,19 @@ class App extends Component {
 
   render() {
     const { counts } = this.state
+    console.log(take(counts, 150))
     return (
-      <div>
-        {counts &&
+      <div className={css({
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        flexGrow: 1,
+        alignContent: 'center',
+        justifyContent: 'center',
+      }).toString()}>
+        {!isEmpty(counts) &&
         <WordCloud
-          counts={counts}
+          counts={take(counts, 150)}
           width={1024}
           height={600}
         />}

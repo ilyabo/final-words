@@ -1,6 +1,5 @@
 import * as React from 'react'
 import d3cloud from 'd3-cloud'
-import take from 'lodash/take'
 
 
 class Words extends React.Component {
@@ -10,9 +9,6 @@ class Words extends React.Component {
     return (
       <svg
         width={width} height={height}
-        style={{
-          backgroundColor: "#cc381e",
-        }}
       >
         <g transform={`translate(${width/2},${height/2})`}>
           {words.map((d, i) =>
@@ -40,32 +36,30 @@ class Words extends React.Component {
 export default class WordCloud extends React.Component {
 
   state = {
-    words: null,
+    ready: false,
   }
 
   componentDidMount() {
     const { counts, width, height } = this.props
     d3cloud()
-      .size([width, height])
-      // .canvas(this.svgRef.current)
-      .words(take(counts, 150))
+      .size([width*2, height*2])
+      .words(counts)
       .padding(30)
       .rotate(() => 0)
-      // .font("Impact")
       .fontSize(d => d.count)
-      .on("end", words => this.setState({ words }))
+      .on("end", () => console.log(counts) ||this.setState({ ready: true }))
       .start()
   }
 
   render() {
-    const { width, height } = this.props
-    const { words } = this.state
+    const { width, height, counts } = this.props
+    const { ready } = this.state
     return (
       <>
-        {words && <Words
+        {ready && <Words
           width={width}
           height={height}
-          words={words}
+          words={counts}
         />}
       </>
     )
