@@ -16,7 +16,8 @@ class Words extends React.Component {
             key={i}
             style={{
               fill: '#fff',
-              fontFamily: 'Lato',
+              // fontFamily: "'Nanum Brush Script', cursive",
+              fontFamily: "'Homemade Apple', cursive",
               fontSize: d.size + 'px',
               textAnchor: 'middle',
             }}
@@ -44,9 +45,9 @@ export default class WordCloud extends React.Component {
     d3cloud()
       .size([width, height])
       .words(counts)
-      .padding(10)
+      .padding(40)
       .rotate(() => 0)
-      .fontSize(d => 1.5 * Math.pow(d.count, 0.6))
+      .fontSize(d =>  Math.pow(d.count, 0.7))
       .on("end", () => this.setState({ ready: true }))
       .start()
   }

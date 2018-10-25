@@ -6,8 +6,9 @@ import take from 'lodash/take'
 import isEmpty from 'lodash/isEmpty'
 
 
+// @import url('https://fonts.googleapis.com/css?family=Nanum+Brush+Script');
 insertRule(`
-  @import url('https://fonts.googleapis.com/css?family=Lato');
+  @import url('https://fonts.googleapis.com/css?family=Homemade+Apple');
 `)
 
 insertGlobal('body', {
