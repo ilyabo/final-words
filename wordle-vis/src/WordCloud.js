@@ -42,12 +42,12 @@ export default class WordCloud extends React.Component {
   componentDidMount() {
     const { counts, width, height } = this.props
     d3cloud()
-      .size([width*2, height*2])
+      .size([width, height])
       .words(counts)
-      .padding(30)
+      .padding(10)
       .rotate(() => 0)
-      .fontSize(d => d.count)
-      .on("end", () => console.log(counts) ||this.setState({ ready: true }))
+      .fontSize(d => 1.5 * Math.pow(d.count, 0.6))
+      .on("end", () => this.setState({ ready: true }))
       .start()
   }
 
