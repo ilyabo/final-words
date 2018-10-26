@@ -7,14 +7,13 @@ import isEmpty from 'lodash/isEmpty'
 
 
 injectGlobal(`
-@import url('https://fonts.googleapis.com/css?family=Give+You+Glory');
 body {
   background-color: #cc381e;
   margin: 0;
   padding: 0;
 }
-text  {
- font-family: 'Give You Glory', cursive;
+svg {
+  display: block;
 }
 `)
 
@@ -37,12 +36,12 @@ class App extends Component {
 
   render() {
     const { counts } = this.state
-    console.log(take(counts, 150))
     return (
       <div className={css({
         display: 'flex',
         width: '100%',
         height: '100%',
+        position: 'absolute',
         flexGrow: 1,
         alignContent: 'center',
         justifyContent: 'center',
@@ -50,8 +49,6 @@ class App extends Component {
         {!isEmpty(counts) &&
         <WordCloud
           counts={take(counts, 150)}
-          width={1024}
-          height={600}
         />}
       </div>
     )
