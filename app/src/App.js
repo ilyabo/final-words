@@ -45,6 +45,29 @@ const PageTitle = styled('h1')(`
   max-width: 300px;
 `)
 
+const Statement = styled('div')(`
+  font-family: 'Give You Glory', cursive;
+  padding: 1rem 0;
+  font-size: 2rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  letter-spacing: 1px;
+`)
+
+
+const Next = () =>
+  <div
+    className={css({
+      fontSize: '10rem',
+      cursor: 'pointer',
+      fontFamily: 'Lato, sans-serif',
+    })}
+  >
+    &gt;&gt;&gt;
+  </div>
 
 const Belt = () =>
   <div className={css({
@@ -97,9 +120,9 @@ class App extends Component {
       statements,
     } = this.state
     return (
-      <Parallax pages={1.6} scrolling={true} horizontal  ref={ref => this.parallax = ref}>
+      <Parallax pages={2.6 + (statements ? statements.length : 0)} scrolling={true} horizontal  ref={ref => this.parallax = ref}>
 
-        <ParallaxLayer offset={0.6} speed={0}>
+        <ParallaxLayer offset={0.7} speed={0.25}>
           <div className={css({
             position: 'absolute',
             width: '100%',
@@ -111,19 +134,19 @@ class App extends Component {
               onSelectWord={this.handleSelectWord}
               counts={take(counts, 150)}
             />}
-            {selectedWord && statements &&
-            <div>{
-              statements.filter(s =>
-                s.toLowerCase().indexOf(selectedWord) >= 0
-              ).map(s =>
-                <div>{s}</div>
-              )
-            }</div>
-            }
+            {/*{selectedWord && statements &&*/}
+            {/*<div>{*/}
+              {/*statements.filter(s =>*/}
+                {/*s.toLowerCase().indexOf(selectedWord) >= 0*/}
+              {/*).map(s =>*/}
+                {/*<div>{s}</div>*/}
+              {/*)*/}
+            {/*}</div>*/}
+            {/*}*/}
           </div>
         </ParallaxLayer>
 
-        <ParallaxLayer offset={0} speed={1}>
+        <ParallaxLayer offset={0} speed={1.5}>
           <div className={css({
             backgroundColor: '#000d',
             width: '100%',
@@ -148,7 +171,7 @@ class App extends Component {
           </div>
         </ParallaxLayer>
 
-        <ParallaxLayer offset={0.1} speed={0.5} factor={0.5} onClick={() => this.parallax.scrollTo(1.6)}>
+        <ParallaxLayer offset={0.1} speed={0.4} factor={0.5} onClick={() => this.parallax.scrollTo(0.6)}>
           <div className={css({
             marginTop: '65%',
             fontSize: '1.2rem',
@@ -160,16 +183,19 @@ class App extends Component {
               of regret? </b> An analysis of 555 last statemenets of prisoners fated to die,
             recorded by the Department of Justice in Texas, reveal myriad stories.
           </div>
-          <div
-            className={css({
-              fontSize: '10rem',
-              cursor: 'pointer',
-            })}
-          >
-            &gt;&gt;&gt;
-          </div>
+          <Next/>
         </ParallaxLayer>
 
+        {
+          statements && statements.filter(s => s.toLowerCase().indexOf('love') >= 0).map((s, i) =>
+            <ParallaxLayer offset={1.6 + i} speed={0.5} factor={0.7} onClick={() => this.parallax.scrollTo(1.6 + i + 0.75)}>
+              <Statement>
+                {s}
+                <Next/>
+              </Statement>
+            </ParallaxLayer>
+          )
+        }
 
       </Parallax>
     )
