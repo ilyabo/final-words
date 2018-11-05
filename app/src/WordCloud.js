@@ -5,13 +5,6 @@ import { injectGlobal } from 'emotion'
 import Measure from 'react-measure'
 import { css } from 'emotion'
 
-injectGlobal(`
-  @import url('https://fonts.googleapis.com/css?family=Give+You+Glory');
-  text  {
-   font-family: 'Give You Glory', cursive;
-  }
-`)
-
 
 
 class Cloud extends React.Component {
@@ -32,7 +25,7 @@ class Cloud extends React.Component {
   }
 
   renderWords() {
-    const { width, height, counts } = this.props
+    const { width, height, counts, onSelectWord } = this.props
     return (
       <svg width={width} height={height}>
         <g transform={`translate(${width/2},${height/2})`}>
@@ -47,11 +40,15 @@ class Cloud extends React.Component {
               counts.map((d, i) =>
                 <text
                   key={i}
+                  className={css({
+                    cursor: 'pointer',
+                    fill: '#000',
+                    textAnchor: 'middle',
+                  })}
+                  onClick={() => onSelectWord(d.text)}
                   style={{
                     ...props,
-                    fill: '#fff',
                     fontSize: d.size + 'px',
-                    textAnchor: 'middle',
                   }}
                   x={d.x}
                   y={d.y}
@@ -88,8 +85,7 @@ export default class WordCloud extends React.Component {
   }
   render() {
     const { dimensions: { width, height }} = this.state
-    const { counts } = this.props
-    console.log(width, height)
+    const { counts, onSelectWord } = this.props
     return (
       <Measure
         bounds
@@ -111,6 +107,7 @@ export default class WordCloud extends React.Component {
               width={width}
               height={height}
               counts={counts}
+              onSelectWord={onSelectWord}
             />}
           </div>}
       </Measure>
