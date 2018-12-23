@@ -15,7 +15,9 @@ class App extends Component {
     fetch('data/statements.csv')
       .then(response => response.text())
       .then(text => this.setState({
-        statements: csvParseRows(text).map(([text]) => text)
+        statements: csvParseRows(text)
+          .map(([text]) => text)
+          .sort((a, b) => b.length - a.length)
       }))
     this.updateSizes()
   }

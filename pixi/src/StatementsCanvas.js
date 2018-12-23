@@ -3,16 +3,18 @@ import * as PIXI from 'pixi.js'
 import * as d3zoom from 'd3-zoom'
 import * as d3selection from 'd3-selection'
 
-const boxWidth = 750
-const boxHeight = 1000
-const NUM_COLS = 30
+const BOX_WIDTH = 750
+const NUM_COLS = 20
+const BOX_PADDING = 50
+const BOX_SPACING_X = 100
+const BOX_SPACING_Y = 75
 
 const textStyle = new PIXI.TextStyle({
   fontFamily: "Courier",
   fontSize: 25,
   fill: '#000',
   wordWrap: true,
-  wordWrapWidth: boxWidth * .8,
+  wordWrapWidth: BOX_WIDTH - BOX_PADDING * 2,
   // stroke: 'steelblue',
   // strokeThickness: 1,
   // dropShadow: true,
@@ -69,19 +71,23 @@ export default class StatementsCanvas extends React.Component {
       // remove old nodes
       this.nodesContainer.removeChildren()
     }
+
     const nodes = []
+    const columnHeights = new Array(NUM_COLS).fill(0)
     if (statements) {
       for (let i = 0; i < statements.length; i++) {
         const group = new PIXI.Container()
         const text = new PIXI.Text(statements[i], textStyle)
-        group.x = (i % NUM_COLS) * boxWidth
-        group.y = Math.floor(i / NUM_COLS) * boxHeight
+
+        const col = columnHeights.reduce(((m, d, i) => d < columnHeights[m] ? i : m), 0)
+        group.x = col * (BOX_WIDTH + BOX_SPACING_X)
+        group.y = columnHeights[col]
         group.addChild(text)
+        columnHeights[col] += text.height + BOX_PADDING * 2 + BOX_SPACING_Y
 
         const rect = new PIXI.Graphics()
-        const pad = 50
         rect.beginFill(0xffffff)
-        rect.drawRoundedRect(-pad, -pad, text.width + pad * 2, text.height + pad * 2, pad/2)
+        rect.drawRoundedRect(-BOX_PADDING, -BOX_PADDING, BOX_WIDTH, text.height + BOX_PADDING * 2, BOX_PADDING/2)
         rect.endFill()
         group.addChildAt(rect, 0)
 
