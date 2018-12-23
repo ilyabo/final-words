@@ -197,6 +197,17 @@ class App extends Component {
           )
         }
 
+
+        <ParallaxLayer offset={1.6} speed={0}>
+          <div className={css({
+            fontSize: '7rem',
+            fontWeight: 'bold',
+            fontFamily: 'Give You Glory',
+          })}>
+            love
+          </div>
+        </ParallaxLayer>
+
       </Parallax>
     )
   }
