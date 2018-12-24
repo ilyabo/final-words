@@ -17,20 +17,22 @@ let rows = statements
   ))
   .map(({ statement, ...rest }) => (
     { ...rest,
-        statement:
-          (
-          statement === 'Last Statement:'
-          || _.isEmpty(statement)
-          )
-            ? 'No last statement.'
-            : statement
+        statement
     }
   ))
-  // .filter(({ statement }) =>
-  //   !_.isEmpty(statement)
-  //   && statement!='(Spoken statement)'
-  //   && statement!='This offender declined to make a last statement.'
-  // )
+  .filter(({ statement }) =>
+    !_.isEmpty(statement)
+    && statement !== '(Spoken statement)'
+    && statement !== 'This offender declined to make a last statement.'
+    && statement !== 'Last Statement:'
+    && statement !== 'No'
+    && statement !== 'None'
+    && statement !== 'None.'
+    && statement !== 'No last statement.'
+    && statement !== 'No statement given.'
+    && statement !== 'No, I have no final statement.'
+    && statement !== 'This offender declined to make a last statement.'
+  )
 
 console.log(`Keeping ${rows.length} rows of ${statements.length} statements`)
 

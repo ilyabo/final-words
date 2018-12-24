@@ -2,18 +2,19 @@ import * as React from 'react'
 import * as PIXI from 'pixi.js'
 import * as d3zoom from 'd3-zoom'
 import * as d3selection from 'd3-selection'
-import { keyframes } from '@emotion/core'
-import styled from '@emotion/styled'
 
-const NUM_COLS = 20
-const CARD_WIDTH = 750
+const NUM_COLS = 25
+const CARD_WIDTH = 600
 const CARD_PADDING = 50
-const CARD_SPACING_X = 200
-const CARD_SPACING_Y = 200
+const CARD_SPACING_X = 750
+const CARD_SPACING_Y = 750
 const CARD_CHILD__RECT = 'rect'
 const CARD_CHILD__TEXT = 'text'
 const CARD_BG_COLOR = 0xffffff
 const CARD_BG_COLOR__HIGHLIGHTED = 0xe0f0f0
+const CARD_FOCUS_SCALE = 0.85
+const ZOOM_TO_FIT_SCALE = 0.85
+const FOCUS_TRANSITION_DURATION = 4000
 
 const textStyle = new PIXI.TextStyle({
   fontFamily: "Courier",
@@ -21,6 +22,7 @@ const textStyle = new PIXI.TextStyle({
   fill: '#000',
   wordWrap: true,
   wordWrapWidth: CARD_WIDTH - CARD_PADDING * 2,
+  lineHeight: 30,
   // stroke: 'steelblue',
   // strokeThickness: 1,
   // dropShadow: true,
@@ -32,15 +34,19 @@ const textStyle = new PIXI.TextStyle({
 
 
 
-export default class StatementsCanvas extends React.Component {
+export default class Canvas extends React.Component {
+
+  state = {
+    selectedIndex: null
+  }
 
   constructor(props) {
     super(props)
     this.canvasRef = React.createRef()
   }
 
-  componentDidMount() {
-    const { width, height } = this.props
+  componentDidMount(prevProps, prevState) {
+    const { width, height, statements } = this.props
     const app = new PIXI.Application({
       width,
       height,
@@ -55,19 +61,41 @@ export default class StatementsCanvas extends React.Component {
       .on('dblclick.zoom', null)
 
     this.app = app
-    this.updateNodes(this.props.statements)
+    this.updateCards(statements)
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { selectedId, statements } = props
+    if (selectedId) {
+      const { selectedIndex } = state
+      const nextIndex = statements.findIndex(s => s.id === selectedId)
+      if (selectedIndex !== nextIndex) {
+        return {
+          selectedIndex: nextIndex
+        }
+      }
+    }
+    return null
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { width, height } = this.props
+    if (prevProps.width !== width || prevProps.height !== height) {
+      this.app.renderer.resize(width, height)
+    }
+    const { statements } = this.props
+    if (prevProps.statements !== statements) {
+      this.updateCards(prevProps.statements)
+    }
+    const { selectedIndex } = this.state
+    if (prevState.selectedIndex !== selectedIndex) {
+      if (selectedIndex) {
+        this.focusOnCard(this.cardsContainer.children[selectedIndex])
+      }
+    }
   }
 
   getZoomTarget = () => d3selection.select(this.canvasRef.current)
-
-  componentWillReceiveProps(nextProps, nextContext) {
-    if (nextProps.statements !== this.props.statements) {
-      this.updateNodes(nextProps.statements)
-    }
-    if (nextProps.width !== this.props.width || nextProps.height !== this.props.height) {
-      this.app.renderer.resize(nextProps.width, nextProps.height)
-    }
-  }
 
 
   drawCardRect = (card, color) => {
@@ -88,20 +116,40 @@ export default class StatementsCanvas extends React.Component {
     rect.endFill()
   }
 
+  focusOnCard = (card) => {
+    const scale = Math.min(CARD_FOCUS_SCALE, 0.95 * this.props.width / CARD_WIDTH)
+    this.getZoomTarget()
+      .transition()
+      .duration(FOCUS_TRANSITION_DURATION)
+      .call(
+        this.zoom.transform,
+        this.zoomTransformToPoint(
+          [
+            card.x + card.width/2,
+            card.y +
+              (card.height > this.props.height/scale/2 ?
+                this.props.height/2/scale*0.95
+              : card.height/2)
+            ,
+
+            //- card.height / 2
+            // card.y + (
+            //   card.height > this.props.height / scale ?
+            //     // this.props.height / scale * 0.1
+            //     0
+            //     : card.height * 0.3
+            // )
+          ],
+          scale
+        )
+      )
+  }
+
+
   handleCardClick = (data) => {
     const { currentTarget } = data
     if (currentTarget) {
-      this.getZoomTarget()
-        .transition()
-        .duration(3000)
-        .call(
-          this.zoom.transform,
-          this.zoomTransformToPoint(
-            [currentTarget.x + currentTarget.width/2, currentTarget.y + currentTarget.height / 2],
-            0.75
-          )
-        )
-      // this.drawCardRect(currentTarget, CARD_BG_COLOR__HIGHLIGHTED)
+      this.focusOnCard(currentTarget)
     }
   }
 
@@ -119,14 +167,14 @@ export default class StatementsCanvas extends React.Component {
     }
   }
 
-  updateNodes(statements) {
-    if (this.nodesContainer) {
-      this.nodesContainer.destroy({ children: true })
+  updateCards(statements) {
+    if (this.cardsContainer) {
+      this.cardsContainer.destroy({ children: true })
     }
 
     if (statements) {
-      const nodesContainer = new PIXI.Container()
-      const nodes = []
+      const cardsContainer = new PIXI.Container()
+      const cards = []
       const columnHeights = new Array(NUM_COLS).fill(0)
       for (let i = 0; i < statements.length; i++) {
         const col = columnHeights.reduce(((m, d, i) => d < columnHeights[m] ? i : m), 0)
@@ -147,12 +195,12 @@ export default class StatementsCanvas extends React.Component {
         columnHeights[col] += text.height + CARD_PADDING * 2 + CARD_SPACING_Y
         this.drawCardRect(card, CARD_BG_COLOR)
 
-        nodesContainer.addChild(card)
-        nodes[i] = card
+        cardsContainer.addChild(card)
+        cards[i] = card
       }
-      this.nodes = nodes
-      this.nodesContainer = nodesContainer
-      this.app.stage.addChild(nodesContainer)
+      this.nodes = cards
+      this.cardsContainer = cardsContainer
+      this.app.stage.addChild(cardsContainer)
       this.zoomToFit()
     }
   }
@@ -161,6 +209,7 @@ export default class StatementsCanvas extends React.Component {
   zoomTransformToPoint = (point, scale) =>
     d3zoom.zoomIdentity
       .translate(this.props.width/2, this.props.height/2)
+      // .translate(this.props.width/2, 0)
       .scale(scale)
       .translate(-point[0], -point[1])
 
@@ -172,45 +221,30 @@ export default class StatementsCanvas extends React.Component {
       .call(
         this.zoom.transform,
         this.zoomTransformToPoint(
-          [this.nodesContainer.width / 2, this.nodesContainer.height / 2],
+          [this.cardsContainer.width / 2, this.cardsContainer.height / 2],
           Math.min(
-            width / this.nodesContainer.width,
-            height / this.nodesContainer.height,
-          ) * 0.7
+            width / this.cardsContainer.width,
+            height / this.cardsContainer.height,
+          ) * ZOOM_TO_FIT_SCALE
         )
       )
   }
 
   handleZoom = () => {
     const { k, x, y } = d3selection.event.transform
-    this.nodesContainer.scale = new PIXI.Point(k, k)
-    this.nodesContainer.position = new PIXI.Point(x, y)
+    this.cardsContainer.scale = new PIXI.Point(k, k)
+    this.cardsContainer.position = new PIXI.Point(x, y)
   }
 
 
   render() {
     const { width, height } = this.props
     return (
-      <FadeIn>
-        <canvas
-          width={width}
-          height={height}
-          ref={this.canvasRef}
-        />
-      </FadeIn>
+      <canvas
+        width={width}
+        height={height}
+        ref={this.canvasRef}
+      />
     )
   }
 }
-
-const fadeIn = keyframes`
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-`
-
-const FadeIn = styled.div`
-  animation: ${fadeIn} 3s ease-in;
-`

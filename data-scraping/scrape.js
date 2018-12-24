@@ -56,7 +56,7 @@ async function fetchLastStatement(page) {
       age, date, race, county,
     ] = tr.querySelectorAll('td').map(d => _.get(d, 'childNodes.0.rawText'))
     const row = {
-      execution,
+      id: execution,
       lastName, firstName, tdcjNumber,
       age, date, race, county,
       offenderInfoUrl,
