@@ -1,27 +1,40 @@
 const _ = require('lodash');
 const fs = require('fs');
 const d3dsv = require('d3-dsv');
+const Entities = require('html-entities').AllHtmlEntities;
+const entities = new Entities();
 
 const statements = JSON.parse(fs.readFileSync('data/statements.json', 'utf8'))
 let rows = statements
-  .filter(s => !!s)
-  .filter(s => s!='(Spoken statement)')
-  .filter(s => _.trim(s)!='This offender declined to make a last statement.')
-  .map(s =>
-    _.trim(
-      s
-      .replace(/"/g, '\"')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&rsquo;/g, "'")
-      .replace(/&ldquo;/g, "")
-      .replace(/&ndash;/g, "-")
-      .replace(/&rdquo;/g, "")
-      .replace(/&quot;/g, '\"')
-    ))
-  .filter(s => !_.isEmpty(s))
-  .map(s => ([s]))
+  .filter(({ statement }) => !!statement)
+  .map(({ statement, ...rest }) => (
+    { ...rest,
+        statement:
+          _.trim(
+            entities.decode(statement)
+          )
+    }
+  ))
+  .map(({ statement, ...rest }) => (
+    { ...rest,
+        statement:
+          (
+          statement === 'Last Statement:'
+          || _.isEmpty(statement)
+          )
+            ? 'No last statement.'
+            : statement
+    }
+  ))
+  // .filter(({ statement }) =>
+  //   !_.isEmpty(statement)
+  //   && statement!='(Spoken statement)'
+  //   && statement!='This offender declined to make a last statement.'
+  // )
+
+console.log(`Keeping ${rows.length} rows of ${statements.length} statements`)
 
 fs.writeFileSync(
   'data/statements.csv',
-  d3dsv.csvFormatRows(rows)
+  d3dsv.csvFormat(rows, Object.keys(rows[0]))
 )
