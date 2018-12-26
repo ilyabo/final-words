@@ -3,18 +3,20 @@ import * as PIXI from 'pixi.js'
 import * as d3zoom from 'd3-zoom'
 import * as d3selection from 'd3-selection'
 
-const NUM_COLS = 25
+const NUM_COLS = 20
 const CARD_WIDTH = 600
 const CARD_PADDING = 50
-const CARD_SPACING_X = 750
-const CARD_SPACING_Y = 750
+const CARD_SPACING_X = 150
+const CARD_SPACING_Y = 150
 const CARD_CHILD__RECT = 'rect'
 const CARD_CHILD__TEXT = 'text'
 const CARD_BG_COLOR = 0xffffff
 const CARD_BG_COLOR__HIGHLIGHTED = 0xe0f0f0
 const CARD_FOCUS_SCALE = 0.85
 const ZOOM_TO_FIT_SCALE = 0.85
-const FOCUS_TRANSITION_DURATION = 4000
+const FOCUS_TRANSITION_DURATION = 2000
+const ZOOM_TO_FIT_TRANSITION_DURATION = 1000
+const CARD_TEXT_VISIBILITY_ZOOM_THRESHOLD = 0.15
 
 const textStyle = new PIXI.TextStyle({
   fontFamily: "Courier",
@@ -116,36 +118,6 @@ export default class Canvas extends React.Component {
     rect.endFill()
   }
 
-  focusOnCard = (card) => {
-    const scale = Math.min(CARD_FOCUS_SCALE, 0.95 * this.props.width / CARD_WIDTH)
-    this.getZoomTarget()
-      .transition()
-      .duration(FOCUS_TRANSITION_DURATION)
-      .call(
-        this.zoom.transform,
-        this.zoomTransformToPoint(
-          [
-            card.x + card.width/2,
-            card.y +
-              (card.height > this.props.height/scale/2 ?
-                this.props.height/2/scale*0.95
-              : card.height/2)
-            ,
-
-            //- card.height / 2
-            // card.y + (
-            //   card.height > this.props.height / scale ?
-            //     // this.props.height / scale * 0.1
-            //     0
-            //     : card.height * 0.3
-            // )
-          ],
-          scale
-        )
-      )
-  }
-
-
   handleCardClick = (data) => {
     const { currentTarget } = data
     if (currentTarget) {
@@ -201,7 +173,7 @@ export default class Canvas extends React.Component {
       this.nodes = cards
       this.cardsContainer = cardsContainer
       this.app.stage.addChild(cardsContainer)
-      this.zoomToFit()
+      this.fitToShowAll()
     }
   }
 
@@ -209,19 +181,44 @@ export default class Canvas extends React.Component {
   zoomTransformToPoint = (point, scale) =>
     d3zoom.zoomIdentity
       .translate(this.props.width/2, this.props.height/2)
-      // .translate(this.props.width/2, 0)
       .scale(scale)
       .translate(-point[0], -point[1])
 
-  zoomToFit() {
-    const { width, height } = this.props
-    const zoomTarget = this.getZoomTarget()
-
-    zoomTarget
+  focusOnCard = (card) => {
+    const scale = Math.min(CARD_FOCUS_SCALE, 0.95 * this.props.width / CARD_WIDTH)
+    this.getZoomTarget()
+      .transition()
+      .duration(FOCUS_TRANSITION_DURATION)
       .call(
         this.zoom.transform,
         this.zoomTransformToPoint(
-          [this.cardsContainer.width / 2, this.cardsContainer.height / 2],
+          [
+            card.x + card.width/2,
+            card.y +
+              (card.height > this.props.height/scale/2 ?
+                this.props.height/2/scale*0.95
+              : card.height/2)
+            ,
+
+          ],
+          scale
+        )
+      )
+  }
+
+  fitToShowAll() {
+    const { width, height } = this.props
+    const zoomTarget = this.getZoomTarget()
+    zoomTarget
+      .transition()
+      .duration(ZOOM_TO_FIT_TRANSITION_DURATION)
+      .call(
+        this.zoom.transform,
+        this.zoomTransformToPoint(
+          [
+            this.cardsContainer.x + this.cardsContainer.width / 2,
+            this.cardsContainer.y + this.cardsContainer.height / 2
+          ],
           Math.min(
             width / this.cardsContainer.width,
             height / this.cardsContainer.height,
@@ -230,10 +227,38 @@ export default class Canvas extends React.Component {
       )
   }
 
+  setCardTextAlpha(alpha) {
+    for (const child of this.cardsContainer.children) {
+      child.getChildByName(CARD_CHILD__TEXT).alpha = alpha
+    }
+  }
+
+  // setShowCardText(value) {
+  //   this.setState({
+  //     showCardText: value,
+  //   })
+  //   for (const child of this.cardsContainer.children) {
+  //     child.getChildByName(CARD_CHILD__TEXT).alpha = value ? 1 : 0
+  //   }
+  // }
+
   handleZoom = () => {
     const { k, x, y } = d3selection.event.transform
-    this.cardsContainer.scale = new PIXI.Point(k, k)
-    this.cardsContainer.position = new PIXI.Point(x, y)
+    const { stage } = this.app
+    stage.scale = new PIXI.Point(k, k)
+    stage.position = new PIXI.Point(x, y)
+
+    // const { showCardText } = this.state
+    // if (showCardText) {
+    //   if (k < CARD_TEXT_VISIBILITY_ZOOM_THRESHOLD) {
+    //     this.setShowCardText(false)
+    //   }
+    // } else {
+    //   if (k >= CARD_TEXT_VISIBILITY_ZOOM_THRESHOLD) {
+    //     this.setShowCardText(true)
+    //   }
+    // }
+    this.setCardTextAlpha(Math.min(1, Math.pow(k, 3)/CARD_TEXT_VISIBILITY_ZOOM_THRESHOLD))
   }
 
 

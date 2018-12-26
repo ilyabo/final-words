@@ -48,7 +48,7 @@ class Cloud extends React.Component {
                   onClick={() => onSelectWord(d.text)}
                   style={{
                     ...props,
-                    fontSize: d.size + 'px',
+                    fontSize: (d.size * 0.8) + 'px',
                   }}
                   x={d.x}
                   y={d.y}

@@ -20,8 +20,9 @@ injectGlobal(`
     display: block;
   }
   text  {
-    font-weight: bold;
-    font-family: 'Give You Glory', cursive;
+    // font-family: 'Courier';
+    // font-family: 'Give You Glory', cursive;
+    font-family: 'Ultra', serif;
   }
 `)
 

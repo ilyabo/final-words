@@ -3,14 +3,24 @@ import { csvParse } from 'd3-dsv'
 import Canvas from './Canvas'
 import styled from '@emotion/styled'
 import FadeIn from './FadeIn'
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect
+} from "react-router-dom"
 
 
 const STATEMENTS_STORY = [
+  410, // I hope this brings closure to what you seek
   381, // "I saw his face and his smile and I knew he was a good man."
+  144, // The people who work here, I thank them for the kindness they have shown me
   313, // "Celebrating life"
   263, // To the guys on death row, stay strong and I hope to see you someday
   251, // "For almost nine years I have thought about the death penalty"
   245, //Tonight I dance on the streets   "And I want you to know that Christina, she did not suffer as much as you think she did.  I promise you that.  I give you my word.  I know you guys want to know where the rest of her remains are.  I put her remains in the Trinity River."
+  295, // "I have always been a nice person"
   85, // "I could hear Kinnamon talking but evidently the phone was not close to the mike, because I could not understand him"
 ]
 
@@ -21,6 +31,11 @@ class App extends Component {
     statements: null,
     storyIndex: 0,
     selectedId: null,
+  }
+
+  constructor(props) {
+    super(props)
+    this.canvasChild = React.createRef()
   }
 
   componentDidMount() {
@@ -53,11 +68,15 @@ class App extends Component {
     } else {
       nextId = statements[Math.floor(Math.random() * statements.length)].id
     }
-    console.log(nextId)
+    // history.push(`/${nextId}`)
     this.setState({
       selectedId: nextId,
       storyIndex: storyIndex + 1,
     })
+  }
+
+  handleShowAll = () => {
+    this.canvasChild.current.fitToShowAll()
   }
 
   render() {
@@ -67,6 +86,7 @@ class App extends Component {
         {width > 0 && statements &&
           <FadeIn>
             <Canvas
+              ref={this.canvasChild}
               width={width}
               height={height}
               statements={statements}
@@ -74,7 +94,7 @@ class App extends Component {
             />
             <ControlsArea>
               <Nav>
-                {/*<Button>← To prev</Button>*/}
+                <Button onClick={this.handleShowAll}>Show all</Button>
                 {/*<Button>To random</Button>*/}
                 <Button onClick={this.handleNext}>Next statement →</Button>
               </Nav>
@@ -96,6 +116,7 @@ const ControlsArea = styled.div`
   bottom: 20px;
   width: 100%;
 `
+
 const Nav = styled.div`
   background: #fff;                  
   border: 1px solid #ccd;
@@ -106,7 +127,7 @@ const Nav = styled.div`
   text-align: center;
   box-shadow: 0 0 4px #667;
   & > * + * {
-    margin-left: 0.25rem;
+    margin-left: 0.75rem;
   }
 `
 
