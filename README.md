@@ -1,4 +1,4 @@
-# Last words of executed inmates in Texas
+
 
 The data is from [here](http://www.tdcj.state.tx.us/death_row/dr_executed_offenders.html).
 
