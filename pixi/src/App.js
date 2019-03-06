@@ -12,6 +12,8 @@ import {
 } from "react-router-dom"
 
 
+// Background music: "Stones" by Todd Baker
+
 const STATEMENTS_STORY = [
   410, // I hope this brings closure to what you seek
   381, // "I saw his face and his smile and I knew he was a good man."
@@ -22,6 +24,7 @@ const STATEMENTS_STORY = [
   245, //Tonight I dance on the streets   "And I want you to know that Christina, she did not suffer as much as you think she did.  I promise you that.  I give you my word.  I know you guys want to know where the rest of her remains are.  I put her remains in the Trinity River."
   295, // "I have always been a nice person"
   85, // "I could hear Kinnamon talking but evidently the phone was not close to the mike, because I could not understand him"
+  350, // I hope it helps a little
 ]
 
 class App extends Component {
@@ -96,7 +99,7 @@ class App extends Component {
               <Nav>
                 <Button onClick={this.handleShowAll}>Show all</Button>
                 {/*<Button>To random</Button>*/}
-                <Button onClick={this.handleNext}>Next statement →</Button>
+                <Button onClick={this.handleNext}>Next →</Button>
               </Nav>
             </ControlsArea>
           </FadeIn>
