@@ -1,0 +1,3 @@
+[build]
+  publish = "pixi/build/"
+  command = "cd pixi && npm i && npm run build"
